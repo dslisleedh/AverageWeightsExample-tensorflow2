@@ -1,0 +1,33 @@
+# Optimizer
+train_config.optimizer = @optimizer_wrapper/tfa.optimizers.MovingAverage()
+optimizer_wrapper/tfa.optimizers.MovingAverage.optimizer = @optimizer/tf.keras.optimizers.Adam()
+
+optimizer/tf.keras.optimizers.Adam.clipvalue = .5
+optimizer/tf.keras.optimizers.Adam.learning_rate = @decay/tf.keras.optimizers.schedules.CosineDecay()
+
+decay/tf.keras.optimizers.schedules.CosineDecay.initial_learning_rate = 5e-3
+decay/tf.keras.optimizers.schedules.CosineDecay.decay_steps = 5000
+decay/tf.keras.optimizers.schedules.CosineDecay.alpha = 0.01
+
+# Loss
+train_config.loss = @tf.keras.losses.SparseCategoricalCrossentropy()
+
+# Metrics
+train_config.metrics = [
+    @tf.keras.metrics.SparseCategoricalAccuracy(),
+    @SparseF1Score()
+]
+SparseF1Score.num_classes = 10
+SparseF1Score.average = 'macro'
+
+# Patience
+train_config.patience = 10
+
+# Epochs
+train_config.epochs = 100
+
+# Batch size
+train_config.batch_size = 512
+
+# Dataset
+train_config.datasets = @load_mnist_dataset()

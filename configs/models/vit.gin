@@ -1,0 +1,16 @@
+train_config.model = @ViT()
+
+ViT.intro_config = {
+    'filters': 512,
+    'patch_size': 4
+}
+ViT.feature_extractor_config = {
+    'n_blocks': 12,
+    'drop_rates': 0.2,
+    'expansion_rate': 4,
+    'n_heads': 8,
+    'use_bias': False,
+}
+ViT.classifier_config = {
+    'n_classes': 10
+}

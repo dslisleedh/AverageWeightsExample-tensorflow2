@@ -1,0 +1,15 @@
+train_config.model = @MLPMixer()
+
+MLPMixer.intro_config = {
+    'filters': 64,
+    'patch_size': 7
+}
+MLPMixer.feature_extractor_config = {
+    'n_blocks': 12,
+    'drop_rates': 0.2,
+    'expansion_rate': 4,
+    'use_bias': False
+}
+MLPMixer.classifier_config = {
+    'n_classes': 10
+}
