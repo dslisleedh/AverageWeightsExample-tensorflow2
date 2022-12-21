@@ -9,7 +9,7 @@ import tensorflow_addons as tfa
 class SwapAverageWeights(tf.keras.callbacks.Callback):
     def on_train_begin(self, logs=None):
         optimizer_name = self.model.optimizer._name
-        assert 'MovingAverage' in optimizer_name,\
+        assert optimizer_name in ['MovingAverage', 'SWA'],\
             'Optimizer must be a MovingAverage optimizer, got {}'.format(optimizer_name)
 
     def on_test_begin(self, logs=None):
