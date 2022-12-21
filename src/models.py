@@ -40,7 +40,10 @@ class MLPMixer(tf.keras.models.Model):
         self.classifier = tf.keras.Sequential([
             tf.keras.layers.LayerNormalization(),
             tf.keras.layers.GlobalAvgPool1D(),
-            tf.keras.layers.Dense(self.classifier_config['n_classes'], activation='softmax')
+            tf.keras.layers.Dense(
+                self.classifier_config['n_classes'], activation='softmax',
+                kernel_initializer=tf.keras.initializers.Zeros()
+            )
         ])
 
     def call(self, inputs, training: bool = False, *args, **kwargs):
@@ -68,7 +71,8 @@ class ViT(tf.keras.models.Model):
                 padding='valid',
                 use_bias=False
             ),
-            Rearrange('b h w c -> b (h w) c')
+            Rearrange('b h w c -> b (h w) c'),
+            ClsToken()
         ])
         n_blocks = self.feature_extractor_config.pop('n_blocks')
         drop_rates = self.feature_extractor_config.pop('drop_rates')
@@ -80,12 +84,24 @@ class ViT(tf.keras.models.Model):
         ])
         self.classifier = tf.keras.Sequential([
             tf.keras.layers.LayerNormalization(),
-            tf.keras.layers.GlobalAvgPool1D(),
-            tf.keras.layers.Dense(self.classifier_config['n_classes'], activation='softmax')
+            tf.keras.layers.Lambda(lambda x: tf.gather(x, 0, axis=1)),
+            tf.keras.layers.Dense(
+                self.classifier_config['n_classes'], activation='softmax',
+                kernel_initializer=tf.keras.initializers.Zeros()
+            )
         ])
+
+    def build(self, input_shape):
+        self.intro.build(input_shape)
+        self.positional_encoding = tf.Variable(
+            tf.random.truncated_normal(stddev=.02, shape=(1,) + self.intro.output_shape[1:]),
+            dtype=tf.float32, trainable=True
+        )
+        super().build(input_shape)
 
     def call(self, inputs, training: bool = False, *args, **kwargs):
         x = self.intro(inputs, training=training)
+        x += self.positional_encoding
         x = self.feature_extractor(x, training=training)
         x = self.classifier(x, training=training)
         return x

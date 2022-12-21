@@ -1,8 +1,8 @@
 train_config.model = @ViT()
 
 ViT.intro_config = {
-    'filters': 512,
-    'patch_size': 4
+    'filters': 32,
+    'patch_size': 7
 }
 ViT.feature_extractor_config = {
     'n_blocks': 12,

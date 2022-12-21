@@ -8,7 +8,7 @@ from typing import Callable, Optional
 
 class MLP(tf.keras.layers.Layer):
     def __init__(
-            self, expansion_rate: int, use_bias: bool = False, activation: tf.nn = tf.nn.gelu
+            self, expansion_rate: int, use_bias: bool = False, activation: Callable = tf.nn.gelu
     ):
         super(MLP, self).__init__()
         self.expansion_rate = expansion_rate
@@ -122,6 +122,22 @@ class MixerBlock(tf.keras.layers.Layer):
         x = self.spatial_MLP(inputs, training, *args, **kwargs)
         x = self.channel_MLP(x, training, *args, **kwargs)
         return x
+
+
+class ClsToken(tf.keras.layers.Layer):
+    def __init__(self):
+        super(ClsToken, self).__init__()
+
+    def build(self, input_shape):
+        self.cls_token = self.add_weight(
+            shape=(1, 1, input_shape[-1]), initializer=tf.keras.initializers.Zeros()
+        )
+        self.dim = input_shape[-1]
+        super(ClsToken, self).build(input_shape)
+
+    def call(self, inputs, training: bool = False, *args, **kwargs):
+        cls_token = tf.broadcast_to(self.cls_token, (tf.shape(inputs)[0], 1, self.dim))
+        return tf.concat([cls_token, inputs], axis=1)
 
 
 class ViTBlock(tf.keras.layers.Layer):
